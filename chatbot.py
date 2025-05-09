@@ -11,7 +11,7 @@ api_key = os.getenv("TOGETHER_API_KEY")
 client = Together(api_key=api_key)
 
 # Page setup
-st.set_page_config(page_title="Chatbot", page_icon="🤖")
+st.set_page_config(page_title="Autobot", page_icon="🤖")
 
 # Include custom fonts and styling
 st.markdown("""
@@ -27,11 +27,27 @@ st.markdown("""
         font-weight: 400;
         line-height: 1.3;
     }
+
+    .autobot-heading {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 40px;
+        transition: all 1s ease-in-out;
+    }
+
+    .autobot-heading-small {
+        font-size: 24px;
+        color: #0084ff;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # Title
-st.markdown("<h1 style='text-align: center; font-family: \"Montserrat\", sans-serif;'> Autobot </h1>", unsafe_allow_html=True)
+if "first_message_sent" in st.session_state and st.session_state.first_message_sent:
+    # If the first message was sent, make heading smaller and move it to the header
+    st.markdown("<h1 class='autobot-heading autobot-heading-small' style='text-align: center;'>Autobot</h1>", unsafe_allow_html=True)
+else:
+    # Initially, display the animated heading in a large size
+    st.markdown("<h1 class='autobot-heading' style='text-align: center;'>Autobot</h1>", unsafe_allow_html=True)
 
 # Initialize session state
 if "chat_history" not in st.session_state:
@@ -39,8 +55,49 @@ if "chat_history" not in st.session_state:
         {"role": "system", "content": "You are a helpful AI assistant."}
     ]
     st.session_state.first_visit = True
+    st.session_state.first_message_sent = False  # Track if first message is sent
 
+# --- Sidebar Section ---
+with st.sidebar:
+    st.markdown("<h1 class='autobot-heading ' style='text-align: left;'>Autobot</h1>",unsafe_allow_html=True)
+    
+    # Button to create a new chat (reset chat history)
+    if st.button("Create New Chat"):
+        st.session_state.chat_history = [{"role": "system", "content": "You are a helpful AI assistant."}]
+        st.session_state.first_visit = True  # Reset the first visit flag
+        st.session_state.first_message_sent = False  # Reset first message flag
+        st.experimental_rerun()  # Rerun the app to reset the chat history and UI
 
+# === Chat Display ===
+chat_container = st.container()
+with chat_container:
+    for message in st.session_state.chat_history:
+        if message["role"] == "user":
+            st.markdown(
+                f"""
+                <div style='display: flex; justify-content: flex-end; margin: 5px 0;'>
+                    <div style='background-color: #0084ff; color: white; padding: 10px;
+                                border-radius: 10px; max-width: 80%;
+                                font-family: "Montserrat", sans-serif; font-size: 17px;'>
+                        {message['content']}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        elif message["role"] == "assistant":
+            st.markdown(
+                f"""
+                <div style='display: flex; justify-content: flex-start; margin: 5px 0;'>
+                    <div style='background-color: #262525; color: white; padding: 10px;
+                                border-radius: 10px; max-width: 80%;
+                                font-family: "Montserrat", sans-serif; font-size: 17px;'>
+                        {message['content']}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 # === Chat Input Section ===
 user_input = st.chat_input("Type your message here...")
@@ -60,6 +117,10 @@ if user_input and user_input.strip():
     </div>
     """, unsafe_allow_html=True)
 
+    # If it's the first message, animate the heading
+    if not st.session_state.first_message_sent:
+        st.session_state.first_message_sent = True  # Set flag to True after first message
+    
     # Assistant typing placeholder
     assistant_response_placeholder = st.empty()
 
@@ -97,7 +158,6 @@ if st.session_state.first_visit:
         ["Yo! 😎", "Need help? I got you.", "Fire away!"],
     ]
     welcome_texts = random.choice(welcome_variants)
-
 
     welcome_placeholder = st.empty()
     
@@ -140,43 +200,11 @@ if st.session_state.first_visit:
             )
             
             # Random slight variation in typing speed for natural effect
-            typing_delay = 0.03 + (random.uniform(0, 0.01) + 0.02 * (char in ['.', '!', '?', ',']))
+            typing_delay = 0.02 + (random.uniform(0, 0.01) + 0.02 * (char in ['.', '!', '?', ',']))
             time.sleep(typing_delay)
         
         # Add a slightly longer pause between paragraphs
-        time.sleep(0.7)
+        time.sleep(0.5)
     
     # Set first_visit to False so the animation doesn't play again
     st.session_state.first_visit = False
-
-# === Chat Display ===
-chat_container = st.container()
-with chat_container:
-    for message in st.session_state.chat_history:
-        if message["role"] == "user":
-            st.markdown(
-                f"""
-                <div style='display: flex; justify-content: flex-end; margin: 5px 0;'>
-                    <div style='background-color: #0084ff; color: white; padding: 10px;
-                                border-radius: 10px; max-width: 80%;
-                                font-family: "Montserrat", sans-serif; font-size: 17px;'>
-                        {message['content']}
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        elif message["role"] == "assistant":
-            st.markdown(
-                f"""
-                <div style='display: flex; justify-content: flex-start; margin: 5px 0;'>
-                    <div style='background-color: #262525; color: white; padding: 10px;
-                                border-radius: 10px; max-width: 80%;
-                                font-family: "Montserrat", sans-serif; font-size: 17px;'>
-                        {message['content']}
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
