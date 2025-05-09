@@ -43,7 +43,7 @@ if "chat_history" not in st.session_state:
 
 
 # === Chat Input Section ===
-user_input = st.chat_input("Type your message...")
+user_input = st.chat_input("Type your message here...")
 
 if user_input and user_input.strip():
     # Append and show user message instantly
@@ -106,9 +106,7 @@ if st.session_state.first_visit:
     <div style='text-align: center;
                 color: white;
                 padding: 25px;
-                border-radius: 16px;
-                margin: 30px 0;
-                box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);'>
+                margin: 30px 0;'>
     """
     
     # Build and display each message character by character
